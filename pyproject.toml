@@ -1,9 +1,0 @@
-[project]
-name = "RAG_against_the_machine"
-version = "0.1.0"
-description = "Retrieval-Augmented Generation"
-readme = "README.md"
-requires-python = ">=3.10"
-dependencies = [
-    "pydantic>=2.13.4"
-]
