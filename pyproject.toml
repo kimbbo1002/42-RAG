@@ -1,0 +1,10 @@
+[project]
+name = "RAG-Against-the-Machine"
+version = "0.1.0"
+description = "A Retrieval-Augmented Generation system over the vLLM codebase."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.6",
+    "markdown-it-py>=3.0"
+]
