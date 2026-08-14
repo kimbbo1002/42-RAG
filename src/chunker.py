@@ -31,7 +31,8 @@ def split_by_max(
     return chunk
 
 
-# ast lines are 1 indexed, therefore lines[i] = character index where line i + 1 starts
+# ast lines are 1 indexed
+# therefore lines[i] = character index where line i + 1 starts
 def get_line_index(text: str) -> List[int]:
     lines = [0]
     for line in text.splitlines(keepends=True):
@@ -50,8 +51,13 @@ class PythonChunker:
             max_chunk_size: int
     ) -> List[Chunk]:
         return [
-            Chunk(file_path=file_path, content=text, first_character_index=start,
-                  last_character_index=end, chunk_type="py")
+            Chunk(
+                file_path=file_path,
+                content=text,
+                first_character_index=start,
+                last_character_index=end,
+                chunk_type="py"
+            )
             for text, start, end in split_by_max(content, max_chunk_size)
         ]
 
@@ -67,20 +73,21 @@ class PythonChunker:
         block = content[start:end]
         if not block.strip():
             return
-        for b_text, b_start, b_end in split_by_max(block, max_chunk_size, start):
+        for b_text, b_start, b_end in split_by_max(block, max_chunk_size,
+                                                   start):
             chunks.append(
                 Chunk(
-                    file_path=file_path, 
-                    content=b_text, 
-                    first_character_index=b_start, 
-                    last_character_index=b_end, 
+                    file_path=file_path,
+                    content=b_text,
+                    first_character_index=b_start,
+                    last_character_index=b_end,
                     chunk_type="py")
             )
 
     # function that manages the chunking flow
     def get_chunk(
-            self, file_path: str, 
-            content: str, 
+            self, file_path: str,
+            content: str,
             max_chunk_size: int
     ) -> List[Chunk]:
         try:
@@ -102,18 +109,21 @@ class PythonChunker:
             start = line_idx[buffer_start_idx - 1]
             end = min(line_idx[buffer_end_idx], len(content))
 
-            self.stock_chunk(chunks, file_path, content, start, end, max_chunk_size)
+            self.stock_chunk(chunks, file_path, content, start, end,
+                             max_chunk_size)
             buffer_start_idx = None
             buffer_end_idx = None
 
         for node in tree.body:
-            is_def = isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+            is_def = isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                       ast.ClassDef))
             if is_def:
                 catch_nondef()
                 start = line_idx[node.lineno - 1]
                 end_lineno = getattr(node, "end_lineno", node.lineno)
                 end = min(line_idx[end_lineno], len(content))
-                self.stock_chunk(chunks, file_path, content, start, end, max_chunk_size)
+                self.stock_chunk(chunks, file_path, content, start, end,
+                                 max_chunk_size)
             else:
                 if buffer_start_idx is None:
                     buffer_start_idx = node.lineno
@@ -149,10 +159,10 @@ class MarkdownChunker:
             end: int
     ) -> Chunk:
         return Chunk(
-            file_path=file_path, 
-            content=content, 
-            first_character_index=start, 
-            last_character_index=end, 
+            file_path=file_path,
+            content=content,
+            first_character_index=start,
+            last_character_index=end,
             chunk_type="md"
         )
 
@@ -160,12 +170,17 @@ class MarkdownChunker:
                 self, file_path: str,
                 content: str,
                 max_chunk_size: int
-        ) -> List[Chunk]:
-            return [
-                Chunk(file_path=file_path, content=text, first_character_index=start,
-                      last_character_index=end, chunk_type="md")
-                for text, start, end in split_by_max(content, max_chunk_size)
-            ]
+    ) -> List[Chunk]:
+        return [
+            Chunk(
+                file_path=file_path,
+                content=text,
+                first_character_index=start,
+                last_character_index=end,
+                chunk_type="md"
+            )
+            for text, start, end in split_by_max(content, max_chunk_size)
+        ]
 
     def get_chunk(
             self, file_path: str,
@@ -183,14 +198,17 @@ class MarkdownChunker:
         if header_idx[0] > 0:
             section_idx.append((0, header_idx[0]))
         for i, start in enumerate(header_idx):
-            end = header_idx[i + 1] if i + 1 < len(header_idx) else len(content)
+            end = (header_idx[i + 1] if i + 1 < len(header_idx)
+                   else len(content))
             section_idx.append((start, end))
 
         for s, e in section_idx:
             section_text = content[s:e]
             if not section_text.strip():
                 continue
-            for text, b_start, b_end in split_by_max(section_text, max_chunk_size, s):
+            for text, b_start, b_end in split_by_max(section_text,
+                                                     max_chunk_size, s):
                 if text.strip():
-                    chunks.append(self.stock_chunk(file_path, text, b_start, b_end))
+                    chunks.append(self.stock_chunk(file_path, text,
+                                                   b_start, b_end))
         return chunks

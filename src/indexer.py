@@ -10,6 +10,7 @@ PY_EXTENSION = {".py"}
 MD_EXTENSION = {".md", ".markdown", ".txt"}
 INDEX_FILENAME = "chunks.json"
 
+
 class Indexer:
     def __init__(self) -> None:
         self.py_chunker = PythonChunker()
@@ -45,9 +46,11 @@ class Indexer:
             file_path = path.as_posix()
             file_ext = path.suffix.lower()
             if file_ext in PY_EXTENSION:
-                chunks = self.py_chunker.get_chunk(file_path, content, max_chunk_size)
+                chunks = self.py_chunker.get_chunk(file_path, content,
+                                                   max_chunk_size)
             elif file_ext in MD_EXTENSION:
-                chunks = self.md_chunker.get_chunk(file_path, content, max_chunk_size)
+                chunks = self.md_chunker.get_chunk(file_path, content,
+                                                   max_chunk_size)
             else:
                 continue
             all_chunks.extend(chunks)
@@ -66,7 +69,9 @@ class Indexer:
 def load_chunks(processed_dir: Path) -> List[Chunk]:
     index_path = processed_dir / INDEX_FILENAME
     if not index_path.exists():
-        raise FileNotFoundError(f"No index found at {index_path}, run 'index' first")
+        raise FileNotFoundError(
+            f"No index found at {index_path}, run 'index' first"
+        )
     with index_path.open("r", encoding="utf-8") as file:
         raw_chunks = json.load(file)
 
