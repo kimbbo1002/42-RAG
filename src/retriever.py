@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
-from typing import List
-from rank_bm25 import BM25Okapi
+from typing import List, Optional
+import bm25s
 from .indexer import load_chunks
 from .models import Chunk, MinimalSource
 
@@ -19,33 +19,27 @@ def tokenize(text: str) -> List[str]:
 class Retriever:
     def __init__(self, processed_dir: Path) -> None:
         self.chunks: List[Chunk] = load_chunks(processed_dir)
-        tokens = [tokenize(c.content) for c in self.chunks]
-        self.bm25 = BM25Okapi(tokens) if tokens else None
+        self.bm25: Optional[bm25s.BM25] = None
+        if self.chunks:
+            tokens = [tokenize(c.content) for c in self.chunks]
+            self.bm25 = bm25s.BM25()
+            self.bm25.index(tokens)
+
+    def search_chunks(self, query: str, k: int) -> List[Chunk]:
+        if not query or not query.strip() or k <= 0 or self.bm25 is None:
+            return []
+
+        tokenized_query = tokenize(query)
+        if not tokenized_query:
+            return []
+
+        max_k = min(k, len(self.chunks))
+        results, scores = self.bm25.retrieve([tokenized_query], max_k)
+        indexes = results[0]
+        return [self.chunks[i] for i in indexes]
 
     def search(self, query: str, k: int) -> List[MinimalSource]:
-        if not query or not query.strip() or k <= 0 or self.bm25 is None:
-            return []
-
-        tokenized_query = tokenize(query)
-        if not tokenized_query:
-            return []
-
-        scores = self.bm25.get_scores(tokenized_query)
-        ranked = sorted(
-            range(len(scores)), key=lambda i: scores[i], reverse=True
-        )[:k]
-        return [self.chunks[r].get_minimal_source() for r in ranked]
+        return [c.get_minimal_source() for c in self.search_chunks(query, k)]
 
     def search_with_content(self, query: str, k: int) -> List[Chunk]:
-        if not query or not query.strip() or k <= 0 or self.bm25 is None:
-            return []
-
-        tokenized_query = tokenize(query)
-        if not tokenized_query:
-            return []
-
-        scores = self.bm25.get_scores(tokenized_query)
-        ranked = sorted(
-            range(len(scores)), key=lambda i: scores[i], reverse=True
-        )[:k]
-        return [self.chunks[r] for r in ranked]
+        return self.search_chunks(query, k)
