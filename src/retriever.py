@@ -20,7 +20,7 @@ class Retriever:
     def __init__(self, processed_dir: Path) -> None:
         self.chunks: List[Chunk] = load_chunks(processed_dir)
         tokens = [tokenize(c.content) for c in self.chunks]
-        self.bm25 = BM250kapi(tokens) if tokens else None
+        self.bm25 = BM25Okapi(tokens) if tokens else None
 
     def search(self, query: str, k: int) -> List[MinimalSource]:
         if not query or not query.strip() or k <= 0 or self.bm25 is None:
