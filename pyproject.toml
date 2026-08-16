@@ -9,5 +9,7 @@ dependencies = [
     "markdown-it-py>=3.0",
     "bm25s",
     "pytest",
-    "tqdm"
+    "tqdm",
+    "transformers",
+    "torch"
 ]
