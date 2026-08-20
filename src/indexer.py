@@ -1,14 +1,17 @@
 import json
 from typing import List
 from pathlib import Path
+import bm25s
 from tqdm import tqdm
 from .models import Chunk
 from .chunker import PythonChunker, MarkdownChunker
+from .tokenizer import tokenize
 
 
 PY_EXTENSION = {".py"}
 MD_EXTENSION = {".md", ".markdown", ".txt"}
 INDEX_FILENAME = "chunks.json"
+BM25_DIRNAME = "bm25"
 
 
 class Indexer:
@@ -56,12 +59,19 @@ class Indexer:
             all_chunks.extend(chunks)
 
         processed_dir.mkdir(parents=True, exist_ok=True)
-        chunks_dict: List[dict] = []
-        for c in tqdm(all_chunks, desc="Tokenizing", unit="chunk"):
-            chunks_dict.append(c.model_dump())
+        chunks_dict = [c.model_dump() for c in all_chunks]
         output_path = processed_dir / INDEX_FILENAME
         with output_path.open("w", encoding="utf-8") as file:
             json.dump(chunks_dict, file)
+
+        corpus_tokens = [
+            tokenize(c.content)
+            for c in tqdm(all_chunks, desc="Tokenizing", unit="chunk")
+        ]
+        if corpus_tokens:
+            bm25 = bm25s.BM25()
+            bm25.index(corpus_tokens, show_progress=False)
+            bm25.save(str(processed_dir / BM25_DIRNAME), show_progress=False)
 
         return len(all_chunks)
 

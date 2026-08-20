@@ -220,7 +220,7 @@ class CLI:
                 continue
 
             found = False
-            for retrieved in s.retrieved_sources:
+            for retrieved in s.retrieved_sources[:student_res.k]:
                 for target in real_q.sources:
                     if retrieved.file_path != target.file_path:
                         continue

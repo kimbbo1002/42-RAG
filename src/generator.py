@@ -37,13 +37,35 @@ def build_context(
 class Generator:
     def __init__(self, model_name: str = MODEL_NAME) -> None:
         self.model_name = model_name
-        self.pipeline = Optional[Any] = None
+        self.pipeline: Optional[Any] = None
 
-    def is_loaded(self) -> None:
-        if self.pipeline is not None:
-            return
-        from transformers import pipeline
-        self.pipeline = pipeline(model=MODEL_NAME)
+    # loaded lazily so commands that never generate an answer do not
+    # pay for the model, and only once per run when they do
+    def is_loaded(self) -> Any:
+        if self.pipeline is None:
+            from transformers import pipeline
+            self.pipeline = pipeline("text-generation",
+                                     model=self.model_name)
+        return self.pipeline
+
+    def build_prompt(
+            self, pipe: Any,
+            question: str,
+            context: str
+    ) -> str:
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": (
+                f"--- Sources ---\n{context}\n--- End sources ---\n\n"
+                f"Question: {question}"
+            )},
+        ]
+        return str(pipe.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False,
+        ))
 
     def answer(
             self, question: str,
@@ -54,18 +76,14 @@ class Generator:
         if not context.strip():
             return "Could not find relevant source content."
 
-        prompt = (
-            f"{SYSTEM_PROMPT}\n\n"
-            f"--- Sources ---\n{context}\n --- End sources ---\n\n"
-            f"Question: {question}\nAnswer:"
-        )
         try:
-            self.is_loaded()
-            output = self.pipeline(
+            pipe = self.is_loaded()
+            prompt = self.build_prompt(pipe, question, context)
+            output = pipe(
                 prompt,
                 max_new_tokens=256,
+                return_full_text=False,
             )[0]["generated_text"]
-            return output
+            return str(output).strip()
         except Exception as e:
             return f"Answer generation failed: {e}"
-            

@@ -17,6 +17,7 @@ def split_by_max(
     if max_size <= 0 or len(text) <= max_size:
         return [(text, start_index, start_index + len(text))]
 
+    overlap = max(0, min(overlap, max_size // 2))
     step = max(1, max_size - overlap)
     chunk: List[tuple[str, int, int]] = []
     start = 0
