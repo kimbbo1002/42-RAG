@@ -16,12 +16,15 @@ BM25_DIRNAME = "bm25"
 
 class Indexer:
     def __init__(self) -> None:
+        """Initialize the Indexer."""
         self.py_chunker = PythonChunker()
         self.md_chunker = MarkdownChunker()
 
+    # function that gets all files
     def get_files(
             self, raw_dir: Path
     ) -> List[Path]:
+        """Get all files in the raw_dir with specified extensions."""
         files: List[Path] = []
         file_extensions = PY_EXTENSION | MD_EXTENSION
         for p in raw_dir.rglob("*"):
@@ -29,11 +32,16 @@ class Indexer:
                 files.append(p)
         return files
 
+    # chunks the files and builds the index
     def build_index(
             self, raw_dir: Path,
             processed_dir: Path,
             max_chunk_size: int
     ) -> int:
+        """
+        Build an index of chunks from files in raw_dir
+        and save to processed_dir.
+        """
         if not raw_dir.exists():
             raise FileNotFoundError(f"Raw data directory not found: {raw_dir}")
 
@@ -76,7 +84,9 @@ class Indexer:
         return len(all_chunks)
 
 
+# reads the chunks and returns them as a list of Chunk objects
 def load_chunks(processed_dir: Path) -> List[Chunk]:
+    """Load chunks from the processed directory."""
     index_path = processed_dir / INDEX_FILENAME
     if not index_path.exists():
         raise FileNotFoundError(

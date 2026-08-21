@@ -8,12 +8,16 @@ CHUNK_OVERLAP = 200
 
 
 # when chunk needs to be split by the max_chunk_size
+# the fallback method of PythonChunker and MarkdownChunker
 def split_by_max(
         text: str,
         max_size: int,
         start_index: int = 0,
         overlap: int = CHUNK_OVERLAP
 ) -> List[tuple[str, int, int]]:
+    """
+    Split the text into chunks of at most max_size characters,
+    with optional overlap between chunks."""
     if max_size <= 0 or len(text) <= max_size:
         return [(text, start_index, start_index + len(text))]
 
@@ -35,6 +39,7 @@ def split_by_max(
 # ast lines are 1 indexed
 # therefore lines[i] = character index where line i + 1 starts
 def get_line_index(text: str) -> List[int]:
+    """Get the starting character index of each line in the text."""
     lines = [0]
     for line in text.splitlines(keepends=True):
         lines.append(lines[-1] + len(line))

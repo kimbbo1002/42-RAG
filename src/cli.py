@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, Dict, List, Optional, cast
 from tqdm import tqdm
 from .generator import Generator
 from .indexer import Indexer
@@ -27,7 +27,9 @@ class CLI:
     def print_source(
             self, source: MinimalSource, indent: str = ""
     ) -> None:
-        span = f"[{source.first_character_index}:{source.last_character_index}]"
+        span = (
+            f"[{source.first_character_index}:{source.last_character_index}]"
+        )
         print(f"{indent}{source.file_path} {span}")
 
     def read_json(self, path: str) -> Optional[Dict[str, Any]]:
@@ -69,7 +71,9 @@ class CLI:
             print(f"Dataset at {path} does not match expected format: {e}")
             return None
 
-    def load_student_search_res(self, path: str) -> Optional[StudentSearchResults]:
+    def load_student_search_res(
+            self, path: str
+    ) -> Optional[StudentSearchResults]:
         data = self.read_json(path)
         if data is None:
             return None
@@ -89,7 +93,9 @@ class CLI:
             return
         try:
             indexer = Indexer()
-            count = indexer.build_index(Path(raw_dir), Path(processed_dir), max_chunk_size)
+            indexer.build_index(
+                Path(raw_dir), Path(processed_dir), max_chunk_size
+            )
             print(f"Ingestion complete! Indices saved under {processed_dir}/")
         except FileNotFoundError as e:
             print(f"Indexing failed: {e}")
@@ -148,7 +154,8 @@ class CLI:
             return
 
         results: List[MinimalSearchResults] = []
-        for question in tqdm(dataset.rag_questions, desc="Searching", unit="question"):
+        for question in tqdm(dataset.rag_questions, desc="Searching",
+                             unit="question"):
             sources = retriever.search(question.question, k)
             results.append(
                 MinimalSearchResults(
@@ -175,8 +182,11 @@ class CLI:
         generator = Generator()
         total_count = len(student_res.search_results)
         answers: List[MinimalAnswer] = []
-        for a in tqdm(student_res.search_results, desc="Answering", unit="question"):
-            answer_text = generator.answer(a.question, a.retrieved_sources, Path(raw_dir))
+        for a in tqdm(student_res.search_results, desc="Answering",
+                      unit="question"):
+            answer_text = generator.answer(
+                a.question, a.retrieved_sources, Path(raw_dir)
+            )
             answers.append(
                 MinimalAnswer(
                     question_id=a.question_id,
@@ -190,9 +200,14 @@ class CLI:
             search_results=answers,
             k=student_res.k
         )
-        output_path = self.write_json(save_directory, student_search_results_path, output)
+        output_path = self.write_json(
+            save_directory, student_search_results_path, output
+        )
         if output_path:
-            print(f"Loaded {total_count} questions ... Processed {total_count} of {total_count} questions")
+            print(
+                f"Loaded {total_count} questions ... "
+                f"Processed {total_count} of {total_count} questions"
+            )
             print(f"Saved student_search_results_and_answer to {output_path}")
 
     def evaluate(
@@ -263,6 +278,3 @@ class CLI:
         print("=" * 40)
         print(f"Total questions: {question_count}")
         print(f"Recall@{student_res.k}: {recall_at_k:.3f}")
-
-
-

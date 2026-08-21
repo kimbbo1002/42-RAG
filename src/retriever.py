@@ -13,7 +13,6 @@ class Retriever:
         if self.chunks:
             self.bm25 = self.load_bm25(processed_dir)
 
-
     def load_bm25(self, processed_dir: Path) -> bm25s.BM25:
         bm25_dir = processed_dir / BM25_DIRNAME
         if bm25_dir.is_dir():
