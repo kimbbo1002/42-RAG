@@ -11,5 +11,7 @@ dependencies = [
     "pytest",
     "tqdm",
     "transformers",
-    "torch"
+    "torch",
+    "cuda-toolkit[cusparse]",
+    "fire"
 ]
