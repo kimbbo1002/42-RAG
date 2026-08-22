@@ -1,10 +1,8 @@
 __pycache__
 .pytest_cache
 .venv
-data/output
-data/processed
+data/
 .mypy_cache
-moulinette
 moulinette-ubuntu
 moulinette-fedora
 RAG_subject.pdf
