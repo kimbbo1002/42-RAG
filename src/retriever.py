@@ -8,12 +8,14 @@ from .tokenizer import tokenize
 
 class Retriever:
     def __init__(self, processed_dir: Path) -> None:
+        """Initialize the Retriever with a processed directory."""
         self.chunks: List[Chunk] = load_chunks(processed_dir)
         self.bm25: Optional[bm25s.BM25] = None
         if self.chunks:
             self.bm25 = self.load_bm25(processed_dir)
 
     def load_bm25(self, processed_dir: Path) -> bm25s.BM25:
+        """Load or create a BM25 index from the processed directory."""
         bm25_dir = processed_dir / BM25_DIRNAME
         if bm25_dir.is_dir():
             try:
@@ -26,6 +28,7 @@ class Retriever:
         return bm25
 
     def search_chunks(self, query: str, k: int) -> List[Chunk]:
+        """Search for the top-k chunks relevant to the query."""
         if not query or not query.strip() or k <= 0 or self.bm25 is None:
             return []
 
@@ -39,7 +42,9 @@ class Retriever:
         return [self.chunks[i] for i in indexes]
 
     def search(self, query: str, k: int) -> List[MinimalSource]:
+        """Search for the top-k relevant sources for the query."""
         return [c.get_minimal_source() for c in self.search_chunks(query, k)]
 
     def search_with_content(self, query: str, k: int) -> List[Chunk]:
+        """Search for the top-k relevant chunks with content for the query."""
         return self.search_chunks(query, k)

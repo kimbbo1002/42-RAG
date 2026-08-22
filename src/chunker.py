@@ -56,6 +56,7 @@ class PythonChunker:
             content: str,
             max_chunk_size: int
     ) -> List[Chunk]:
+        """Fallback method to chunk the content by max_chunk_size."""
         return [
             Chunk(
                 file_path=file_path,
@@ -76,6 +77,7 @@ class PythonChunker:
             end: int,
             max_chunk_size: int
     ) -> None:
+        """Store a chunk of content into the chunks list."""
         block = content[start:end]
         if not block.strip():
             return
@@ -96,6 +98,7 @@ class PythonChunker:
             content: str,
             max_chunk_size: int
     ) -> List[Chunk]:
+        """Get chunks from the content of a Python file."""
         try:
             tree = ast.parse(content)
         except SyntaxError:
@@ -108,6 +111,7 @@ class PythonChunker:
         buffer_end_idx: int | None = None
 
         def catch_nondef() -> None:
+            """Catch and store non-function/class definitions as chunks."""
             nonlocal buffer_start_idx, buffer_end_idx
             if buffer_start_idx is None or buffer_end_idx is None:
                 return
@@ -151,6 +155,8 @@ class MarkdownChunker:
             self, content: str,
             line_idx: List[int]
     ) -> List[int]:
+        """Get the starting character index of
+        each header in the Markdown content."""
         tokens = md_parser.parse(content)
         header_idx = []
         for token in tokens:
@@ -164,6 +170,7 @@ class MarkdownChunker:
             start: int,
             end: int
     ) -> Chunk:
+        """Create a Chunk object for the given content slice."""
         return Chunk(
             file_path=file_path,
             content=content,
@@ -177,6 +184,7 @@ class MarkdownChunker:
                 content: str,
                 max_chunk_size: int
     ) -> List[Chunk]:
+        """Fallback method to chunk the content by max_chunk_size."""
         return [
             Chunk(
                 file_path=file_path,
@@ -193,6 +201,7 @@ class MarkdownChunker:
             content: str,
             max_chunk_size: int
     ) -> List[Chunk]:
+        """Get chunks from the content of a Markdown file."""
         line_idx = get_line_index(content)
         header_idx = self.get_header_index(content, line_idx)
         chunks: List[Chunk] = []

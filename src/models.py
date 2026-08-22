@@ -56,6 +56,7 @@ class Chunk(BaseModel):
     chunk_type: ChunkType
 
     def get_minimal_source(self) -> MinimalSource:
+        """Get a MinimalSource representation of this Chunk."""
         return MinimalSource(
             file_path=self.file_path,
             first_character_index=self.first_character_index,

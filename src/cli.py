@@ -18,6 +18,7 @@ from .retriever import Retriever
 
 class CLI:
     def init_retriever(self, processed_dir: str) -> Optional[Retriever]:
+        """Initialize the Retriever with the given processed directory."""
         try:
             return Retriever(Path(processed_dir))
         except FileNotFoundError as e:
@@ -27,12 +28,14 @@ class CLI:
     def print_source(
             self, source: MinimalSource, indent: str = ""
     ) -> None:
+        """Print the source information with optional indentation."""
         span = (
             f"[{source.first_character_index}:{source.last_character_index}]"
         )
         print(f"{indent}{source.file_path} {span}")
 
     def read_json(self, path: str) -> Optional[Dict[str, Any]]:
+        """Read a JSON file and return its content as a dictionary."""
         file_path = Path(path)
         if not file_path.exists():
             print(f"File not found: {path}")
@@ -50,6 +53,7 @@ class CLI:
             source_path: str,
             model: Any
     ) -> Optional[Path]:
+        """Write the model data to a JSON file in the specified directory."""
         try:
             out_dir = Path(save_dir)
             out_dir.mkdir(parents=True, exist_ok=True)
@@ -62,6 +66,7 @@ class CLI:
             return None
 
     def load_dataset(self, path: str) -> Optional[RagDataset]:
+        """Load a dataset from a JSON file and validate its structure."""
         data = self.read_json(path)
         if data is None:
             return None
@@ -74,6 +79,8 @@ class CLI:
     def load_student_search_res(
             self, path: str
     ) -> Optional[StudentSearchResults]:
+        """Load student search results from
+        a JSON file and validate its structure."""
         data = self.read_json(path)
         if data is None:
             return None
@@ -88,6 +95,8 @@ class CLI:
             raw_dir: str = "data/raw",
             processed_dir: str = "data/processed"
     ) -> None:
+        """Index files from raw_dir into processed_dir
+        with specified chunk size."""
         if max_chunk_size <= 0:
             print("max_chunk_size must be a positive integer.")
             return
@@ -107,6 +116,7 @@ class CLI:
             k: int = 5,
             processed_dir: str = "data/processed"
     ) -> None:
+        """Search for sources relevant to the query and print them."""
         retriever = self.init_retriever(processed_dir)
         if retriever is None:
             return
@@ -124,6 +134,7 @@ class CLI:
             processed_dir: str = "data/processed",
             raw_dir: str = "data/raw"
     ) -> None:
+        """Generate an answer to the query using retrieved sources."""
         retriever = self.init_retriever(processed_dir)
         if retriever is None:
             return
@@ -146,6 +157,8 @@ class CLI:
             save_directory: str = "data/output/search_results",
             processed_dir: str = "data/processed"
     ) -> None:
+        """Search for sources for each question in the dataset
+        and save the results to a JSON file."""
         dataset = self.load_dataset(dataset_path)
         if dataset is None:
             return
@@ -175,6 +188,7 @@ class CLI:
             save_directory: str = "data/output/search_results_and_answer",
             raw_dir: str = "data/raw"
     ) -> None:
+        """Generate answers for each question in the student search results"""
         student_res = self.load_student_search_res(student_search_results_path)
         if student_res is None:
             return
@@ -214,6 +228,8 @@ class CLI:
             self, student_search_results_path: str,
             dataset_path: str
     ) -> None:
+        """Evaluate the recall of student search
+        results against the dataset."""
         student_res = self.load_student_search_res(student_search_results_path)
         real_res = self.load_dataset(dataset_path)
 

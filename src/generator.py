@@ -16,6 +16,8 @@ def build_context(
         sources: List[MinimalSource],
         raw_dir: Path
 ) -> str:
+    """Build a context string from the provided
+    sources by reading their content from the raw_dir."""
     source_texts = []
     for s in sources:
         possible_paths = [Path(s.file_path), raw_dir / s.file_path]
@@ -36,12 +38,14 @@ def build_context(
 
 class Generator:
     def __init__(self, model_name: str = MODEL_NAME) -> None:
+        """Initialize the Generator with a specified model name."""
         self.model_name = model_name
         self.pipeline: Optional[Any] = None
 
     # loaded lazily so commands that never generate an answer do not
     # pay for the model, and only once per run when they do
     def is_loaded(self) -> Any:
+        """Load the model pipeline if not already loaded."""
         if self.pipeline is None:
             from transformers import pipeline
             self.pipeline = pipeline("text-generation",
@@ -53,6 +57,7 @@ class Generator:
             question: str,
             context: str
     ) -> str:
+        """Build a prompt for the model using the question and context."""
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": (
@@ -72,6 +77,7 @@ class Generator:
             sources: List[MinimalSource],
             raw_dir: Path
     ) -> str:
+        """Generate an answer to the question using the provided sources."""
         context = build_context(sources, raw_dir)
         if not context.strip():
             return "Could not find relevant source content."

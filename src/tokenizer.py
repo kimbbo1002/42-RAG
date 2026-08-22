@@ -12,6 +12,8 @@ used using
 
 
 def tokenize(text: str) -> List[str]:
+    """Tokenize the input text into a list of lowercase tokens,
+    excluding stopwords."""
     tokens: List[str] = []
     for t in TOKEN_REGEX.findall(text):
         low = t.lower()
