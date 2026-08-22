@@ -12,5 +12,7 @@ dependencies = [
     "transformers",
     "torch",
     "cuda-toolkit[cusparse]",
-    "fire"
+    "fire",
+    "flake8",
+    "mypy"
 ]
